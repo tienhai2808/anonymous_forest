@@ -1,6 +1,9 @@
 package handler
 
 import (
+	"context"
+	"time"
+
 	"github.com/go-playground/validator/v10"
 	"github.com/gofiber/fiber/v2"
 	"github.com/tienhai2808/anonymous_forest/backend/internal/common"
@@ -19,6 +22,11 @@ func NewPostHandler(postSvc service.PostService) *PostHandler {
 }
 
 func (h *PostHandler) CreatePost(c *fiber.Ctx) error {
+	ctx, cancel := context.WithTimeout(c.Context(), 5*time.Second)
+	defer cancel()
+
+	clientID := c.Locals("client_id").(string)
+
 	var req request.CreatePostRequest
 	if err := c.BodyParser(&req); err != nil {
 		message := common.HandleValidationError(err)
@@ -30,7 +38,17 @@ func (h *PostHandler) CreatePost(c *fiber.Ctx) error {
 		return common.JSON(c, fiber.StatusBadRequest, message, nil)
 	}
 
+	postLink, err := h.postSvc.CreatePost(ctx, clientID, req)
+	if err != nil {
+		switch err {
+		case common.ErrTooManyPost:
+			return common.JSON(c, fiber.StatusTooManyRequests, err.Error(), nil)
+		default:
+			return common.JSON(c, fiber.StatusInternalServerError, err.Error(), nil)
+		}
+	}
+
 	return common.JSON(c, fiber.StatusCreated, "Tạo bài viết thành công", fiber.Map{
-		"post_id": 1,
+		"post_link": postLink,
 	})
 }

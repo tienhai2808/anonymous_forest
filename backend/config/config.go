@@ -27,12 +27,21 @@ type Config struct {
 			IdleTimeout  time.Duration `mapstructure:"idle_timeout"`
 			BodyLimit    int           `mapstructure:"body_limit"`
 		} `mapstructure:"http"`
+		ClientToken    string        `mapstructure:"client_token"`
+		TokenExpiresIn time.Duration `mapstructure:"token_expires_in"`
+		SecureCookie   bool          `mapstructure:"secure_cookie"`
+		HttpCookie     bool          `mapstructure:"http_cookie"`
 	} `mapstructure:"app"`
 
 	Database struct {
 		DBUri  string `mapstructure:"mongo_uri"`
-		DBName string `mapstructure:"db_name"`
+		DBName string `mapstructure:"mongo_db"`
 	} `mapstructure:"database"`
+
+	Cache struct {
+		CAddr string `mapstructure:"redis_addr"`
+		CDb   int    `mapstructure:"redis_db"`
+	} `mapstructure:"cache"`
 }
 
 func LoadConfig() (*Config, error) {

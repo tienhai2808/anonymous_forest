@@ -8,17 +8,22 @@ import (
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/cors"
+	"github.com/gofiber/fiber/v2/middleware/limiter"
+	"github.com/redis/go-redis/v9"
 	"github.com/tienhai2808/anonymous_forest/backend/config"
+	"github.com/tienhai2808/anonymous_forest/backend/internal/common"
 	"github.com/tienhai2808/anonymous_forest/backend/internal/container"
 	"github.com/tienhai2808/anonymous_forest/backend/internal/initialization"
+	"github.com/tienhai2808/anonymous_forest/backend/internal/middleware"
 	"github.com/tienhai2808/anonymous_forest/backend/internal/router"
 	"go.mongodb.org/mongo-driver/v2/mongo"
 )
 
 type Server struct {
-	cfg *config.Config
-	app *fiber.App
-	mCli  *mongo.Client
+	cfg  *config.Config
+	app  *fiber.App
+	mdb *mongo.Client
+	rdb *redis.Client
 }
 
 func NewServer(cfg *config.Config) (*Server, error) {
@@ -41,12 +46,33 @@ func NewServer(cfg *config.Config) (*Server, error) {
 		MaxAge:           cfg.App.Cors.MaxAge,
 	}))
 
-	mCli, err := initialization.InitDB(cfg)
+	app.Use(limiter.New(limiter.Config{
+		Next: func(c *fiber.Ctx) bool {
+			return c.IP() == "127.0.0.1"
+		},
+		Max:        20,
+		Expiration: 30 * time.Second,
+		LimitReached: func (c *fiber.Ctx) error {
+			return c.Status(fiber.StatusTooManyRequests).JSON(common.ApiResponse{
+				Message: "to many requests!!!",
+				Data: nil,
+			})
+		},
+	}))
+
+	app.Use(middleware.CheckSession(cfg))
+
+	mdb, err := initialization.InitDB(cfg)
 	if err != nil {
 		return nil, err
 	}
 
-	postCtn := container.NewPostContainer(mCli.Database(cfg.Database.DBName))
+	rdb, err := initialization.InitCache(cfg)
+	if err != nil {
+		return nil, err
+	}
+
+	postCtn := container.NewPostContainer(mdb.Database(cfg.Database.DBName), rdb)
 
 	api := app.Group(cfg.App.ApiPrefix)
 	router.PostRouter(api, postCtn.PostHandler)
@@ -54,7 +80,8 @@ func NewServer(cfg *config.Config) (*Server, error) {
 	return &Server{
 		cfg,
 		app,
-		mCli,
+		mdb,
+		rdb,
 	}, nil
 }
 
@@ -67,8 +94,12 @@ func (s *Server) Shutdown(ctx context.Context) {
 		log.Println("Đang shutdown server...")
 	}
 
-	if s.mCli != nil {
-		_ = s.mCli.Disconnect(ctx)
+	if s.mdb != nil {
+		_ = s.mdb.Disconnect(ctx)
+	}
+
+	if s.rdb != nil {
+		_ = s.rdb.Close()
 	}
 
 	if s.app != nil {
