@@ -3,6 +3,7 @@ package implement
 import (
 	"context"
 	"crypto/rand"
+	"errors"
 	"fmt"
 	"math/big"
 	"time"
@@ -13,6 +14,7 @@ import (
 	"github.com/tienhai2808/anonymous_forest/backend/internal/request"
 	"github.com/tienhai2808/anonymous_forest/backend/internal/service"
 	"go.mongodb.org/mongo-driver/v2/bson"
+	"go.mongodb.org/mongo-driver/v2/mongo"
 )
 
 type postServiceImpl struct {
@@ -28,11 +30,15 @@ func NewPostService(postRepo repository.PostRepository, redisRepo repository.Red
 }
 
 func (s *postServiceImpl) CreatePost(ctx context.Context, clientID string, req request.CreatePostRequest) (string, error) {
-	postCount, err := s.postRepo.CountByClientID(ctx, clientID)
+	key := fmt.Sprintf("post-created:%s", clientID)
+	postCount, err := s.redisRepo.IncrementWithTTL(ctx, key, 24*time.Hour)
 	if err != nil {
-		return "", fmt.Errorf("kiểm tra số lượng bài viết thất bại: %w", err)
+		return "", fmt.Errorf("tăng số lượng bài viết thất bại: %w", err)
 	}
-	if postCount >= 5 {
+	if postCount > 5 {
+		if err = s.redisRepo.Decrement(ctx, key); err != nil {
+			return "", fmt.Errorf("giảm số lượng bài viết thất bại: %w", err)
+		}
 		return "", common.ErrTooManyPost
 	}
 
@@ -48,19 +54,51 @@ func (s *postServiceImpl) CreatePost(ctx context.Context, clientID string, req r
 	}
 
 	if err := s.postRepo.Create(ctx, post); err != nil {
+		if err = s.redisRepo.Decrement(ctx, key); err != nil {
+			return "", fmt.Errorf("giảm số lượng bài viết thất bại: %w", err)
+		}
 		return "", fmt.Errorf("tạo bài viết thất bại: %w", err)
 	}
 
 	var postLink string
 	if req.GetLink != nil && *req.GetLink {
 		postLink = randomLink()
-		key := fmt.Sprintf("get-link:%s", postLink)
-		if err := s.redisRepo.SaveString(ctx, key, post.ID.String(), 7*24*time.Hour); err != nil {
+		key = fmt.Sprintf("get-link:%s", postLink)
+		if err := s.redisRepo.SetString(ctx, key, post.ID.Hex(), 7*24*time.Hour); err != nil {
+			if err = s.redisRepo.Decrement(ctx, key); err != nil {
+				return "", fmt.Errorf("giảm số lượng bài viết thất bại: %w", err)
+			}
 			return "", fmt.Errorf("tạo liên kết theo dõi thất bại: %w", err)
 		}
 	}
 
 	return postLink, nil
+}
+
+func (s *postServiceImpl) GetPostByLink(ctx context.Context, postLink string) (bson.M, error) {
+	key := fmt.Sprintf("get-link:%s", postLink)
+	postID, err := s.redisRepo.GetString(ctx, key)
+	if err != nil {
+		return nil, fmt.Errorf("lấy thông tin bài viết thất bại: %w", err)
+	}
+	if postID == "" {
+		return nil, common.ErrPostNotFound
+	}
+
+	postObjID, err := bson.ObjectIDFromHex(postID)
+	if err != nil {
+		return nil, fmt.Errorf("ID không hợp lệ: %w", err)
+	}
+
+	post, err := s.postRepo.FindByID(ctx, postObjID)
+	if err != nil {
+		if errors.Is(err, mongo.ErrNoDocuments) {
+			return nil, common.ErrPostNotFound
+		}
+		return nil, fmt.Errorf("lấy thông tin bài viết thất bại: %w", err)
+	}
+
+	return post, nil
 }
 
 func randomLink() string {

@@ -9,6 +9,7 @@ import (
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/cors"
 	"github.com/gofiber/fiber/v2/middleware/limiter"
+	"github.com/gofiber/fiber/v2/middleware/logger"
 	"github.com/redis/go-redis/v9"
 	"github.com/tienhai2808/anonymous_forest/backend/config"
 	"github.com/tienhai2808/anonymous_forest/backend/internal/common"
@@ -20,8 +21,8 @@ import (
 )
 
 type Server struct {
-	cfg  *config.Config
-	app  *fiber.App
+	cfg *config.Config
+	app *fiber.App
 	mdb *mongo.Client
 	rdb *redis.Client
 }
@@ -36,6 +37,8 @@ func NewServer(cfg *config.Config) (*Server, error) {
 			BodyLimit:    cfg.App.Http.BodyLimit * 1024 * 1024,
 		},
 	)
+
+	app.Use(logger.New())
 
 	app.Use(cors.New(cors.Config{
 		AllowOrigins:     cfg.App.Cors.AllowOrigins,
@@ -52,10 +55,10 @@ func NewServer(cfg *config.Config) (*Server, error) {
 		},
 		Max:        20,
 		Expiration: 30 * time.Second,
-		LimitReached: func (c *fiber.Ctx) error {
+		LimitReached: func(c *fiber.Ctx) error {
 			return c.Status(fiber.StatusTooManyRequests).JSON(common.ApiResponse{
 				Message: "to many requests!!!",
-				Data: nil,
+				Data:    nil,
 			})
 		},
 	}))

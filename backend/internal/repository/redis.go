@@ -6,5 +6,11 @@ import (
 )
 
 type RedisRepository interface {
-	SaveString(ctx context.Context, key string, str string, ttl time.Duration) error
+	SetString(ctx context.Context, key string, str string, ttl time.Duration) error
+
+	GetString(ctx context.Context, key string) (string, error)
+
+	IncrementWithTTL(ctx context.Context, key string, ttl time.Duration) (int64, error)
+
+	Decrement(ctx context.Context, key string) error
 }

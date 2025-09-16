@@ -52,3 +52,31 @@ func (h *PostHandler) CreatePost(c *fiber.Ctx) error {
 		"post_link": postLink,
 	})
 }
+
+func (h *PostHandler) GetPostByLink(c *fiber.Ctx) error {
+	ctx, cancel := context.WithTimeout(c.Context(), 5*time.Second)
+	defer cancel()
+
+	postLink := c.Params("id")
+
+	post, err := h.postSvc.GetPostByLink(ctx, postLink)
+	if err != nil {
+		switch err {
+		case common.ErrPostNotFound:
+			return common.JSON(c, fiber.StatusNotFound, err.Error(), nil)
+		default:
+			return common.JSON(c, fiber.StatusInternalServerError, err.Error(), nil)
+		}
+	}
+
+	return common.JSON(c, fiber.StatusOK, "Lấy bài viết thành công", fiber.Map{
+		"post": post,
+	})
+}
+
+// func (h *PostHandler) GetRandomPost(c *fiber.Ctx) error {
+// 	_, cancel := context.WithTimeout(c.Context(), 5*time.Second)
+// 	defer cancel()
+
+// 	return common.JSON(c, fiber.StatusOK, "Lấy bài viết thành công", nil)
+// }
