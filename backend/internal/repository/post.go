@@ -12,5 +12,5 @@ type PostRepository interface {
 
 	FindByID(ctx context.Context, objID bson.ObjectID) (bson.M, error)
 
-	CountByClientID(ctx context.Context, clientID string) (int64, error)
+	FindRandomExcludeIDs(ctx context.Context, objIDs []bson.ObjectID) (bson.M, error)
 }

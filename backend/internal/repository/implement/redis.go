@@ -34,18 +34,35 @@ func (r *redisRepositoryImpl) GetString(ctx context.Context, key string) (string
 }
 
 func (r *redisRepositoryImpl) IncrementWithTTL(ctx context.Context, key string, ttl time.Duration) (int64, error) {
-	var incrCmd *redis.IntCmd
-	if _, err := r.rdb.TxPipelined(ctx, func(pipe redis.Pipeliner) error {
-		incrCmd = pipe.Incr(ctx, key)
-		pipe.ExpireNX(ctx, key, ttl)
+	var intCmd *redis.IntCmd
+	if _, err := r.rdb.TxPipelined(ctx, func(p redis.Pipeliner) error {
+		intCmd = p.Incr(ctx, key)
+		p.ExpireNX(ctx, key, ttl)
 		return nil
 	}); err != nil {
 		return 0, err
 	}
 
-	return incrCmd.Val(), nil
+	return intCmd.Val(), nil
 }
 
 func (r *redisRepositoryImpl) Decrement(ctx context.Context, key string) error {
 	return r.rdb.Decr(ctx, key).Err()
+}
+
+func (r *redisRepositoryImpl) SetAddWithTTL(ctx context.Context, key string, str string, ttl time.Duration) error {
+	var intCmd *redis.IntCmd
+	if _, err := r.rdb.TxPipelined(ctx, func(p redis.Pipeliner) error {
+		intCmd = p.SAdd(ctx, key, str)
+		p.ExpireNX(ctx, key, ttl)
+		return nil
+	}); err != nil {
+		return err
+	}
+
+	return intCmd.Err()
+}
+
+func (r *redisRepositoryImpl) SetMembers(ctx context.Context, key string) ([]string, error) {
+	return r.rdb.SMembers(ctx, key).Result()
 }

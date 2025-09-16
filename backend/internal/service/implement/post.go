@@ -39,12 +39,11 @@ func (s *postServiceImpl) CreatePost(ctx context.Context, clientID string, req r
 		if err = s.redisRepo.Decrement(ctx, key); err != nil {
 			return "", fmt.Errorf("giảm số lượng bài viết thất bại: %w", err)
 		}
-		return "", common.ErrTooManyPost
+		return "", common.ErrTooManyPostsCreated
 	}
 
 	post := &model.Post{
 		ID:           bson.NewObjectID(),
-		ClientID:     clientID,
 		Content:      req.Content,
 		EmpathyCount: 0,
 		ProtestCount: 0,
@@ -96,6 +95,43 @@ func (s *postServiceImpl) GetPostByLink(ctx context.Context, postLink string) (b
 			return nil, common.ErrPostNotFound
 		}
 		return nil, fmt.Errorf("lấy thông tin bài viết thất bại: %w", err)
+	}
+
+	return post, nil
+}
+
+func (s *postServiceImpl) GetRandomPost(ctx context.Context, clientID string) (bson.M, error) {
+	key := fmt.Sprintf("viewed-posts:%s", clientID)
+	viewedIDs, err := s.redisRepo.SetMembers(ctx, key)
+	if err != nil {
+		return nil, fmt.Errorf("lấy danh sách bài viết đã xem thất bại: %w", err)
+	}
+
+	if len(viewedIDs) >= 10 {
+		return nil, common.ErrTooManyPostsViewed
+	}
+
+	objectIDs := make([]bson.ObjectID, 0, len(viewedIDs))
+	for _, id := range viewedIDs {
+		objectID, err := bson.ObjectIDFromHex(id)
+		if err != nil {
+			return nil, fmt.Errorf("chuyển đổi ID %s thành ObjectID thất bại: %w", id, err)
+		}
+		objectIDs = append(objectIDs, objectID)
+	}
+
+	post, err := s.postRepo.FindRandomExcludeIDs(ctx, objectIDs)
+	if err != nil {
+		if errors.Is(err, mongo.ErrNoDocuments) {
+			return nil, common.ErrPostNotFound
+		}
+		return nil, fmt.Errorf("lấy ngẫu nhiên bài viết thất bại: %w", err)
+	}
+
+	if oid, ok := post["_id"].(bson.ObjectID); ok {
+		if err = s.redisRepo.SetAddWithTTL(ctx, key, oid.Hex(), 24 * time.Hour); err != nil {
+			return nil, fmt.Errorf("lưu bài viết đã xem thất bại: %w", err)
+		}
 	}
 
 	return post, nil

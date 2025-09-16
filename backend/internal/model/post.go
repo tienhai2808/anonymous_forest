@@ -8,7 +8,6 @@ import (
 
 type Post struct {
 	ID           bson.ObjectID   `bson:"_id,omitempty" json:"id"`
-	ClientID     string          `bson:"client_id" json:"client_id"`
 	Content      string          `bson:"content" json:"content"`
 	EmpathyCount int             `bson:"empathy_count" json:"empathy_count"`
 	ProtestCount int             `bson:"protest_count" json:"protest_count"`

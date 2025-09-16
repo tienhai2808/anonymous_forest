@@ -25,9 +25,6 @@ func NewPostRepository(db *mongo.Database) repository.PostRepository {
 		{
 			Keys: bson.D{{Key: "created_at", Value: -1}},
 		},
-		{
-			Keys: bson.D{{Key: "client_id", Value: 1}},
-		},
 	}
 
 	collection.Indexes().CreateMany(ctx, indexes)
@@ -54,11 +51,10 @@ func (r *postRepositoryImpl) FindByID(ctx context.Context, objID bson.ObjectID) 
 		}}},
 		{{Key: "$project", Value: bson.D{
 			{Key: "comment_ids", Value: 0},
-			{Key: "client_id", Value: 0},
-			{Key: "_id", Value: 0},
 			{Key: "updated_at", Value: 0},
 		}}},
 	}
+
 	cursor, err := r.collection.Aggregate(ctx, pipeline)
 	if err != nil {
 		return nil, err
@@ -76,8 +72,41 @@ func (r *postRepositoryImpl) FindByID(ctx context.Context, objID bson.ObjectID) 
 	return results[0], nil
 }
 
-func (r *postRepositoryImpl) CountByClientID(ctx context.Context, clientID string) (int64, error) {
-	return r.collection.CountDocuments(ctx, bson.M{
-		"client_id": clientID,
-	})
+func (r *postRepositoryImpl) FindRandomExcludeIDs(ctx context.Context, objIDs []bson.ObjectID) (bson.M, error) {
+	match := bson.D{}
+	if len(objIDs) > 0 {
+		match = bson.D{{Key: "_id", Value: bson.D{{Key: "$nin", Value: objIDs}}}}
+	}
+
+	pipeline := mongo.Pipeline{}
+	if len(match) > 0 {
+		pipeline = append(pipeline, bson.D{{Key: "$match", Value: match}})
+	}
+	pipeline = append(pipeline, bson.D{{Key: "$sample", Value: bson.D{{Key: "size", Value: 1}}}},
+		bson.D{{Key: "$lookup", Value: bson.D{
+			{Key: "from", Value: "comments"},
+			{Key: "localField", Value: "_id"},
+			{Key: "foreignField", Value: "post_id"},
+			{Key: "as", Value: "comments"},
+		}}},
+		bson.D{{Key: "$project", Value: bson.D{
+			{Key: "comment_ids", Value: 0},
+			{Key: "updated_at", Value: 0},
+		}}})
+
+	cursor, err := r.collection.Aggregate(ctx, pipeline)
+	if err != nil {
+		return nil, err
+	}
+	defer cursor.Close(ctx)
+
+	var results []bson.M
+	if err := cursor.All(ctx, &results); err != nil {
+		return nil, err
+	}
+	if len(results) == 0 {
+		return nil, mongo.ErrNoDocuments
+	}
+
+	return results[0], nil
 }

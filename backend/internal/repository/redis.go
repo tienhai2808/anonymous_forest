@@ -13,4 +13,8 @@ type RedisRepository interface {
 	IncrementWithTTL(ctx context.Context, key string, ttl time.Duration) (int64, error)
 
 	Decrement(ctx context.Context, key string) error
+
+	SetAddWithTTL(ctx context.Context, key string, str string, ttl time.Duration) error
+
+	SetMembers(ctx context.Context, key string) ([]string, error)
 }
