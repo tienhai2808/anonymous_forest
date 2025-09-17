@@ -8,23 +8,25 @@ import (
 	"math/big"
 	"time"
 
-	"github.com/tienhai2808/anonymous_forest/backend/internal/common"
-	"github.com/tienhai2808/anonymous_forest/backend/internal/model"
-	"github.com/tienhai2808/anonymous_forest/backend/internal/repository"
-	"github.com/tienhai2808/anonymous_forest/backend/internal/request"
-	"github.com/tienhai2808/anonymous_forest/backend/internal/service"
+	"github.com/tienhai2808/anonymous_forest/internal/common"
+	"github.com/tienhai2808/anonymous_forest/internal/model"
+	"github.com/tienhai2808/anonymous_forest/internal/repository"
+	"github.com/tienhai2808/anonymous_forest/internal/request"
+	"github.com/tienhai2808/anonymous_forest/internal/service"
 	"go.mongodb.org/mongo-driver/v2/bson"
 	"go.mongodb.org/mongo-driver/v2/mongo"
 )
 
 type postServiceImpl struct {
 	postRepo  repository.PostRepository
+	cmtRepo   repository.CommentRepository
 	redisRepo repository.RedisRepository
 }
 
-func NewPostService(postRepo repository.PostRepository, redisRepo repository.RedisRepository) service.PostService {
+func NewPostService(postRepo repository.PostRepository, cmtRepo repository.CommentRepository, redisRepo repository.RedisRepository) service.PostService {
 	return &postServiceImpl{
 		postRepo,
+		cmtRepo,
 		redisRepo,
 	}
 }
@@ -86,10 +88,10 @@ func (s *postServiceImpl) GetPostByLink(ctx context.Context, postLink string) (b
 
 	postObjID, err := bson.ObjectIDFromHex(postID)
 	if err != nil {
-		return nil, fmt.Errorf("ID không hợp lệ: %w", err)
+		return nil, fmt.Errorf("chuyển đổi ID thành ObjectID thất bại: %w", err)
 	}
 
-	post, err := s.postRepo.FindByID(ctx, postObjID)
+	post, err := s.postRepo.FindByIDWithComments(ctx, postObjID)
 	if err != nil {
 		if errors.Is(err, mongo.ErrNoDocuments) {
 			return nil, common.ErrPostNotFound
@@ -115,12 +117,12 @@ func (s *postServiceImpl) GetRandomPost(ctx context.Context, clientID string) (b
 	for _, id := range viewedIDs {
 		objectID, err := bson.ObjectIDFromHex(id)
 		if err != nil {
-			return nil, fmt.Errorf("chuyển đổi ID %s thành ObjectID thất bại: %w", id, err)
+			return nil, fmt.Errorf("chuyển đổi ID thành ObjectID thất bại: %w", err)
 		}
 		objectIDs = append(objectIDs, objectID)
 	}
 
-	post, err := s.postRepo.FindRandomExcludeIDs(ctx, objectIDs)
+	post, err := s.postRepo.FindRandomExcludeIDsWithComments(ctx, objectIDs)
 	if err != nil {
 		if errors.Is(err, mongo.ErrNoDocuments) {
 			return nil, common.ErrPostNotFound
@@ -129,12 +131,112 @@ func (s *postServiceImpl) GetRandomPost(ctx context.Context, clientID string) (b
 	}
 
 	if oid, ok := post["_id"].(bson.ObjectID); ok {
-		if err = s.redisRepo.SetAddWithTTL(ctx, key, oid.Hex(), 24 * time.Hour); err != nil {
+		if err = s.redisRepo.SetAddWithTTL(ctx, key, oid.Hex(), 24*time.Hour); err != nil {
 			return nil, fmt.Errorf("lưu bài viết đã xem thất bại: %w", err)
 		}
 	}
 
 	return post, nil
+}
+
+func (s *postServiceImpl) AddEmpathyPost(ctx context.Context, id string) error {
+	oid, err := bson.ObjectIDFromHex(id)
+	if err != nil {
+		return common.ErrInvalidID
+	}
+
+	updateData := bson.M{
+		"$inc": bson.M{"empathy_count": 1},
+		"$set": bson.M{"updated_at": time.Now().Local()},
+	}
+	if err = s.postRepo.Update(ctx, oid, updateData); err != nil {
+		if errors.Is(err, mongo.ErrNoDocuments) {
+			return common.ErrPostNotFound
+		}
+		return fmt.Errorf("tăng số lượng đồng cảm thất bại: %w", err)
+	}
+
+	return nil
+}
+
+func (s *postServiceImpl) AddProtestPost(ctx context.Context, id string) error {
+	oid, err := bson.ObjectIDFromHex(id)
+	if err != nil {
+		return common.ErrInvalidID
+	}
+
+	updateData := bson.M{
+		"$inc": bson.M{"protest_count": 1},
+		"$set": bson.M{"updated_at": time.Now().Local()},
+	}
+	if err = s.postRepo.Update(ctx, oid, updateData); err != nil {
+		if errors.Is(err, mongo.ErrNoDocuments) {
+			return common.ErrPostNotFound
+		}
+		return fmt.Errorf("tăng số lượng phản đối bài viết thất bại: %w", err)
+	}
+
+	post, err := s.postRepo.FindByID(ctx, oid)
+	if err != nil {
+		return fmt.Errorf("lấy thông tin bài viết thất bại: %w", err)
+	}
+	if post == nil {
+		return common.ErrPostNotFound
+	}
+
+	if post.ProtestCount >= 5 {
+		if err = s.postRepo.Delete(ctx, oid); err != nil {
+			if errors.Is(err, mongo.ErrNoDocuments) {
+				return common.ErrPostNotFound
+			}
+			return fmt.Errorf("xóa bài viết thất bại: %w", err)
+		}
+
+		if err = s.cmtRepo.DeleteByPostID(ctx, oid); err != nil {
+			return fmt.Errorf("xóa bình luận của bài viết thất bại: %w", err)
+		}
+	}
+
+	return nil
+}
+
+func (s *postServiceImpl) CreatePostComment(ctx context.Context, id string, req request.CreatePostCommentRequest) error {
+	oid, err := bson.ObjectIDFromHex(id)
+	if err != nil {
+		return common.ErrInvalidID
+	}
+
+	post, err := s.postRepo.FindByID(ctx, oid)
+	if err != nil {
+		return fmt.Errorf("lấy thông tin bài viết thất bại: %w", err)
+	}
+	if post == nil {
+		return common.ErrPostNotFound
+	}
+
+	comment := &model.Comment{
+		ID:        bson.NewObjectID(),
+		PostID:    oid,
+		Content:   req.Content,
+		CreatedAt: time.Now().Local(),
+	}
+
+	if err = s.cmtRepo.Create(ctx, comment); err != nil {
+		return fmt.Errorf("thêm bình luận thất bại: %w", err)
+	}
+
+	updateData := bson.M{
+		"$push": bson.M{"comment_ids": comment.ID},
+		"$set":  bson.M{"updated_at": time.Now().Local()},
+	}
+	if err = s.postRepo.Update(ctx, oid, updateData); err != nil {
+		if errors.Is(err, mongo.ErrNoDocuments) {
+			return common.ErrPostNotFound
+		}
+		return fmt.Errorf("tăng số lượng phản đối bài viết thất bại: %w", err)
+	}
+
+	return nil
 }
 
 func randomLink() string {

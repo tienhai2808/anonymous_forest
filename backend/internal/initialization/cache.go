@@ -6,7 +6,7 @@ import (
 	"time"
 
 	"github.com/redis/go-redis/v9"
-	"github.com/tienhai2808/anonymous_forest/backend/config"
+	"github.com/tienhai2808/anonymous_forest/config"
 )
 
 func InitCache(cfg *config.Config) (*redis.Client, error) {

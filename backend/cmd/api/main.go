@@ -9,8 +9,8 @@ import (
 	"time"
 
 	"github.com/gofiber/fiber/v2"
-	"github.com/tienhai2808/anonymous_forest/backend/config"
-	"github.com/tienhai2808/anonymous_forest/backend/internal/server"
+	"github.com/tienhai2808/anonymous_forest/config"
+	"github.com/tienhai2808/anonymous_forest/internal/server"
 )
 
 func main() {

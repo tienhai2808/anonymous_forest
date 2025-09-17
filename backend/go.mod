@@ -1,4 +1,4 @@
-module github.com/tienhai2808/anonymous_forest/backend
+module github.com/tienhai2808/anonymous_forest
 
 go 1.23.4
 

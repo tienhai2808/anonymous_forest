@@ -1,3 +1,6 @@
 package common
 
-const PostCollection = "posts"
+const (
+	PostCollection = "posts"
+	CommentCollection = "comments"
+)

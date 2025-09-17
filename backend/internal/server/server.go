@@ -11,12 +11,12 @@ import (
 	"github.com/gofiber/fiber/v2/middleware/limiter"
 	"github.com/gofiber/fiber/v2/middleware/logger"
 	"github.com/redis/go-redis/v9"
-	"github.com/tienhai2808/anonymous_forest/backend/config"
-	"github.com/tienhai2808/anonymous_forest/backend/internal/common"
-	"github.com/tienhai2808/anonymous_forest/backend/internal/container"
-	"github.com/tienhai2808/anonymous_forest/backend/internal/initialization"
-	"github.com/tienhai2808/anonymous_forest/backend/internal/middleware"
-	"github.com/tienhai2808/anonymous_forest/backend/internal/router"
+	"github.com/tienhai2808/anonymous_forest/config"
+	"github.com/tienhai2808/anonymous_forest/internal/common"
+	"github.com/tienhai2808/anonymous_forest/internal/container"
+	"github.com/tienhai2808/anonymous_forest/internal/initialization"
+	"github.com/tienhai2808/anonymous_forest/internal/middleware"
+	"github.com/tienhai2808/anonymous_forest/internal/router"
 	"go.mongodb.org/mongo-driver/v2/mongo"
 )
 

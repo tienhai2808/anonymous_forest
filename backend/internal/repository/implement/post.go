@@ -2,11 +2,12 @@ package implement
 
 import (
 	"context"
+	"errors"
 	"time"
 
-	"github.com/tienhai2808/anonymous_forest/backend/internal/common"
-	"github.com/tienhai2808/anonymous_forest/backend/internal/model"
-	"github.com/tienhai2808/anonymous_forest/backend/internal/repository"
+	"github.com/tienhai2808/anonymous_forest/internal/common"
+	"github.com/tienhai2808/anonymous_forest/internal/model"
+	"github.com/tienhai2808/anonymous_forest/internal/repository"
 	"go.mongodb.org/mongo-driver/v2/bson"
 	"go.mongodb.org/mongo-driver/v2/mongo"
 )
@@ -33,14 +34,11 @@ func NewPostRepository(db *mongo.Database) repository.PostRepository {
 }
 
 func (r *postRepositoryImpl) Create(ctx context.Context, post *model.Post) error {
-	if _, err := r.collection.InsertOne(ctx, post); err != nil {
-		return err
-	}
-
-	return nil
+	_, err := r.collection.InsertOne(ctx, post)
+	return err
 }
 
-func (r *postRepositoryImpl) FindByID(ctx context.Context, objID bson.ObjectID) (bson.M, error) {
+func (r *postRepositoryImpl) FindByIDWithComments(ctx context.Context, objID bson.ObjectID) (bson.M, error) {
 	pipeline := mongo.Pipeline{
 		{{Key: "$match", Value: bson.D{{Key: "_id", Value: objID}}}},
 		{{Key: "$lookup", Value: bson.D{
@@ -62,7 +60,7 @@ func (r *postRepositoryImpl) FindByID(ctx context.Context, objID bson.ObjectID) 
 	defer cursor.Close(ctx)
 
 	var results []bson.M
-	if err := cursor.All(ctx, &results); err != nil {
+	if err = cursor.All(ctx, &results); err != nil {
 		return nil, err
 	}
 	if len(results) == 0 {
@@ -72,7 +70,7 @@ func (r *postRepositoryImpl) FindByID(ctx context.Context, objID bson.ObjectID) 
 	return results[0], nil
 }
 
-func (r *postRepositoryImpl) FindRandomExcludeIDs(ctx context.Context, objIDs []bson.ObjectID) (bson.M, error) {
+func (r *postRepositoryImpl) FindRandomExcludeIDsWithComments(ctx context.Context, objIDs []bson.ObjectID) (bson.M, error) {
 	match := bson.D{}
 	if len(objIDs) > 0 {
 		match = bson.D{{Key: "_id", Value: bson.D{{Key: "$nin", Value: objIDs}}}}
@@ -101,7 +99,7 @@ func (r *postRepositoryImpl) FindRandomExcludeIDs(ctx context.Context, objIDs []
 	defer cursor.Close(ctx)
 
 	var results []bson.M
-	if err := cursor.All(ctx, &results); err != nil {
+	if err = cursor.All(ctx, &results); err != nil {
 		return nil, err
 	}
 	if len(results) == 0 {
@@ -109,4 +107,40 @@ func (r *postRepositoryImpl) FindRandomExcludeIDs(ctx context.Context, objIDs []
 	}
 
 	return results[0], nil
+}
+
+func (r *postRepositoryImpl) Update(ctx context.Context, objID bson.ObjectID, updateData any) error {
+	result, err := r.collection.UpdateByID(ctx, objID, updateData)
+	if err != nil {
+		return err
+	}
+	if result.MatchedCount == 0 {
+		return mongo.ErrNoDocuments
+	}
+
+	return nil
+}
+
+func (r *postRepositoryImpl) FindByID(ctx context.Context, objID bson.ObjectID) (*model.Post, error) {
+	var post model.Post
+	if err := r.collection.FindOne(ctx, bson.M{"_id": objID}).Decode(&post); err != nil {
+		if errors.Is(err, mongo.ErrNoDocuments) {
+			return nil, nil
+		}
+		return nil, err
+	}
+
+	return &post, nil
+}
+
+func (r *postRepositoryImpl) Delete(ctx context.Context, objID bson.ObjectID) error {
+	result, err := r.collection.DeleteOne(ctx, bson.M{"_id": objID})
+	if err != nil {
+		return err
+	}
+	if result.DeletedCount == 0 {
+		return mongo.ErrNoDocuments
+	}
+
+	return nil
 }

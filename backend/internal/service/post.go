@@ -3,7 +3,7 @@ package service
 import (
 	"context"
 
-	"github.com/tienhai2808/anonymous_forest/backend/internal/request"
+	"github.com/tienhai2808/anonymous_forest/internal/request"
 	"go.mongodb.org/mongo-driver/v2/bson"
 )
 
@@ -13,4 +13,10 @@ type PostService interface {
 	GetPostByLink(ctx context.Context, postLink string) (bson.M, error)
 
 	GetRandomPost(ctx context.Context, clientID string) (bson.M, error)
+
+	AddEmpathyPost(ctx context.Context, id string) error
+
+	AddProtestPost(ctx context.Context, id string) error
+
+	CreatePostComment(ctx context.Context, id string, req request.CreatePostCommentRequest) error
 }
