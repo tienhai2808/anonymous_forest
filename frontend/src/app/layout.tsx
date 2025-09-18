@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { IBM_Plex_Mono } from "next/font/google";
 import "./globals.css";
 import SideBar from "@/components/SideBar";
+import ThemeProvider from "@/components/theme-provider";
 
 const ibmPlexMono = IBM_Plex_Mono({
   subsets: ["vietnamese"],
@@ -12,7 +13,7 @@ const ibmPlexMono = IBM_Plex_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Chốn an yên",
+  title: "Chốn An Yên",
   description: "Nơi trút bầu tâm sự",
 };
 
@@ -22,14 +23,14 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning>
       <body className={ibmPlexMono.className}>
-        <div className="flex min-h-screen">
-          <SideBar/>
-          <div className="flex flex-col flex-1 bg-white">
-            {children}
+        <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
+          <div className="flex min-h-screen">
+            <SideBar />
+            <div className="flex flex-col flex-1">{children}</div>
           </div>
-        </div>
+        </ThemeProvider>
       </body>
     </html>
   );
