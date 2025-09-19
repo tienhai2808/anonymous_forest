@@ -1,16 +1,11 @@
 "use client";
 
-import { IconProps } from "@/shared/types";
-import React from "react";
-
-
-export default function Logo({ height, width }: IconProps) {
+export default function Logo() {
   return (
     <svg
       xmlns="http://www.w3.org/2000/svg"
       viewBox="0 0 64 64"
-      height={height}
-      width={width}
+      className="w-10 h-10 sm:w-14 sm:h-14"
     >
       <g data-name="Glyph">
         <path

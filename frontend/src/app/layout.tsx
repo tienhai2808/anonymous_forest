@@ -25,9 +25,16 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <body className={ibmPlexMono.className}>
-        <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
-          <div className="flex min-h-screen">
-            <SideBar />
+        <ThemeProvider
+          attribute="class"
+          defaultTheme="system"
+          enableSystem
+          disableTransitionOnChange
+        >
+          <div className="flex h-screen flex-col sm:flex-row">
+            <div className="order-last sm:order-first">
+              <SideBar />
+            </div>
             <div className="flex flex-col flex-1">{children}</div>
           </div>
         </ThemeProvider>

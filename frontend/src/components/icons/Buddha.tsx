@@ -1,16 +1,12 @@
 "use client";
 
-import { IconProps } from "@/shared/types";
-import React from "react";
-
-export default function Buddha({ height, width }: IconProps) {
+export default function Buddha() {
   return (
     <svg
       xmlns="http://www.w3.org/2000/svg"
       data-name="Layer 3"
       viewBox="0 0 64 64"
-      height={height}
-      width={width}
+      className="w-26 h-26 sm:w-40 sm:h-40"
     >
       <path
         className="fill-current text-black dark:text-white"

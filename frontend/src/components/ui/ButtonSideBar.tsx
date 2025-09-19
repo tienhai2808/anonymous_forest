@@ -2,7 +2,6 @@
 
 import { useTheme } from "next-themes";
 import { useRouter } from "next/navigation";
-import React from "react";
 import { IconType } from "react-icons";
 import { IoMoonOutline, IoSunnyOutline } from "react-icons/io5";
 
@@ -13,7 +12,7 @@ interface ButtonProps {
   className?: string;
 }
 
-export default function Button({
+export default function ButtonSideBar({
   label,
   icon,
   link,
@@ -55,7 +54,7 @@ export default function Button({
 
   return (
     <button
-      className={`rounded-sm flex flex-col py-2 items-center gap-0.5 bg-gray-100 dark:hover:bg-gray-700 hover:bg-gray-300 dark:bg-neutral-900 transition-colors  ${className}`}
+      className={`rounded-sm w-[70px] sm:w-auto justify-between cursor-pointer flex flex-col py-2 items-center gap-0.5 bg-gray-100 dark:hover:bg-gray-700 hover:bg-gray-300 dark:bg-neutral-900 transition-colors  ${className}`}
       onClick={handleClick}
     >
       {RenderIcon()}

@@ -85,6 +85,8 @@ func (h *PostHandler) GetRandomPost(c *fiber.Ctx) error {
 		switch err {
 		case common.ErrTooManyPostsViewed:
 			return common.JSON(c, fiber.StatusTooManyRequests, err.Error(), nil)
+		case common.ErrPostNotFound:
+			return common.JSON(c, fiber.StatusNotFound, err.Error(), nil)
 		default:
 			return common.JSON(c, fiber.StatusInternalServerError, err.Error(), nil)
 		}
