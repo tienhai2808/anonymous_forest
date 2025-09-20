@@ -5,19 +5,13 @@ import { useRouter } from "next/navigation";
 import { IconType } from "react-icons";
 import { IoMoonOutline, IoSunnyOutline } from "react-icons/io5";
 
-interface ButtonProps {
+interface ButtonSideBarProps {
   label?: string;
   icon?: IconType | "appearance";
   link?: string;
-  className?: string;
 }
 
-export default function ButtonSideBar({
-  label,
-  icon,
-  link,
-  className,
-}: ButtonProps) {
+export default function ButtonSideBar({ label, icon, link }: ButtonSideBarProps) {
   const { theme, setTheme } = useTheme();
   const router = useRouter();
 
@@ -50,7 +44,7 @@ export default function ButtonSideBar({
 
   return (
     <button
-      className={`rounded-sm w-[70px] sm:w-auto justify-between cursor-pointer flex flex-col py-2 items-center gap-0.5 bg-gray-100 dark:hover:bg-gray-700 hover:bg-gray-300 dark:bg-neutral-900 transition-colors  ${className}`}
+      className="rounded-md w-[70px] sm:w-auto justify-between cursor-pointer flex flex-col py-2 items-center gap-0.5 bg-gray-100 dark:hover:bg-gray-700 hover:bg-gray-300 dark:bg-neutral-900 transition-colors"
       onClick={handleClick}
     >
       {RenderIcon()}

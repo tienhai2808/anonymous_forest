@@ -322,7 +322,7 @@ export default function Feed() {
 
           {error && !showConfirmDialog && (
             <div className="text-center flex flex-col justify-center items-center py-8 text-red-500">
-              <PiSmileySad className="mb-2" />
+              <PiSmileySad className="mb-2 text-5xl sm:text-6xl" />
               <p className="sm:text-base text-sm">
                 Ta đang không được khỏe, con hãy quay lại sau
               </p>
