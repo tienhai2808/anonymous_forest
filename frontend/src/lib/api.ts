@@ -1,4 +1,10 @@
-import { ApiResponse, PostResponse } from "@/shared/types";
+import {
+  ApiResponse,
+  CreatePostCommentData,
+  CreatePostData,
+  PostCreatedResponse,
+  PostResponse,
+} from "@/shared/types";
 import axios, {
   AxiosInstance,
   AxiosResponse,
@@ -40,4 +46,34 @@ export async function getRandomPost(): Promise<ApiResponse<PostResponse>> {
       throw error;
     });
   return response.data;
+}
+
+export async function createPost(
+  data: CreatePostData
+): Promise<ApiResponse<PostCreatedResponse>> {
+  const response = await axiosInstance.post("/posts", data).catch((error) => {
+    throw error;
+  });
+  return response.data;
+}
+
+export async function addEmpathy(postId: string): Promise<void> {
+  await axiosInstance.patch(`/posts/${postId}/empathy`).catch((error) => {
+    throw error;
+  });
+}
+
+export async function addProtest(postId: string): Promise<void> {
+  await axiosInstance.patch(`posts/${postId}/protest`).catch((error) => {
+    throw error;
+  });
+}
+
+export async function addComment(
+  postId: string,
+  data: CreatePostCommentData
+): Promise<void> {
+  await axiosInstance.post(`/posts/${postId}/comments`, data).catch((error) => {
+    throw error;
+  });
 }

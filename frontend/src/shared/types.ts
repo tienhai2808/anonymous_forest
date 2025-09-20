@@ -23,3 +23,16 @@ export interface Comment {
   content: string;
   created_at: string;
 }
+
+export interface CreatePostData {
+  content: string;
+  get_link: boolean;
+}
+
+export interface CreatePostCommentData {
+  content: string;
+}
+
+export interface PostCreatedResponse {
+  post_link: string;
+}

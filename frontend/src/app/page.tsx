@@ -1,10 +1,10 @@
 import Feed from "@/components/Feed";
 import Buddha from "@/components/icons/Buddha";
 import Alert from "@/components/ui/Alert";
-import { quotes } from "@/lib/quotes";
+import { welcome } from "@/lib/quotes";
 
 export default function Home() {
-  const randomQuote = quotes[Math.floor(Math.random() * quotes.length)];
+  const randomQuote = welcome[Math.floor(Math.random() * welcome.length)];
 
   return (
     <div className="flex flex-col sm:items-center items-start sm:justify-center justify-start py-4 bg-white h-[calc(100vh-58px)] dark:bg-black sm:h-screen  sm:px-4">

@@ -25,17 +25,13 @@ export default function ButtonSideBar({
     if (icon === "appearance") {
       setTheme(theme === "dark" ? "light" : "dark");
     } else if (link) {
-      router.push(link)
+      router.push(link);
     }
   };
 
   const RenderIcon = () => {
     if (icon === "appearance") {
-      return theme === "dark" ? (
-        <IoSunnyOutline />
-      ) : (
-        <IoMoonOutline />
-      );
+      return theme === "dark" ? <IoSunnyOutline /> : <IoMoonOutline />;
     }
     if (typeof icon === "function") {
       const IconComp = icon;
@@ -60,5 +56,5 @@ export default function ButtonSideBar({
       {RenderIcon()}
       <span className="text-sm">{RenderLabel()}</span>
     </button>
-  );  
+  );
 }
