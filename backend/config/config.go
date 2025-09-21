@@ -1,6 +1,7 @@
 package config
 
 import (
+	"os"
 	"time"
 
 	"github.com/spf13/viper"
@@ -45,8 +46,13 @@ type Config struct {
 }
 
 func LoadConfig() (*Config, error) {
-	viper.SetConfigFile("config/config.yaml")
+	cfgFile := os.Getenv("CONFIG_FILE")
+	if cfgFile == "" {
+		cfgFile = "config/config.yaml"
+	}
+	viper.SetConfigFile(cfgFile)
 	viper.SetConfigType("yaml")
+	viper.AutomaticEnv()
 
 	if err := viper.ReadInConfig(); err != nil {
 		return nil, err

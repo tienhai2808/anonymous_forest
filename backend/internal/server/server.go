@@ -78,6 +78,9 @@ func NewServer(cfg *config.Config) (*Server, error) {
 	postCtn := container.NewPostContainer(mdb.Database(cfg.Database.DBName), rdb)
 
 	api := app.Group(cfg.App.ApiPrefix)
+	api.Get("/health", func(c *fiber.Ctx) error {
+		return c.Status(fiber.StatusOK).SendString("healthy\n")
+	})
 	router.PostRouter(api, postCtn.PostHandler)
 
 	return &Server{
