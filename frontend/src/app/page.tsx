@@ -7,8 +7,8 @@ export default function Home() {
   const randomQuote = welcome[Math.floor(Math.random() * welcome.length)];
 
   return (
-    <div className="flex flex-col sm:items-center items-start sm:justify-center justify-start py-4 bg-white h-[calc(100vh-58px)] dark:bg-black sm:h-screen  sm:px-4">
-      <div className="h-2/5 w-full flex flex-col items-center justify-end">
+    <div className="flex flex-col items-center justify-center sm:py-4 py-2 bg-white dark:bg-black min-h-screen sm:px-4 pb-[58px] sm:pb-4">
+      <div className=" sm:min-h-auto min-h-[20vh] h-auto w-full flex flex-col items-center justify-end">
         <div className="mb-0.5">
           <Notification content={randomQuote} />
         </div>
@@ -16,7 +16,7 @@ export default function Home() {
           <Buddha />
         </div>
       </div>
-      <div className="h-3/5 w-full">
+      <div className="sm:max-h-auto max-h-[60vh] w-full">
         <div className="h-full w-full flex justify-center overflow-hidden">
           <Feed />
         </div>

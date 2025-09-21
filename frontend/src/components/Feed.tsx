@@ -126,7 +126,7 @@ export default function Feed() {
 
   const copyToClipboard = () => {
     if (postLink) {
-      navigator.clipboard.writeText(postLink);
+      navigator.clipboard.writeText(`${window.location.origin}/views/${postLink}`);
       setLinkCopied(true);
       setTimeout(() => setLinkCopied(false), 2000);
     }
@@ -341,20 +341,20 @@ export default function Feed() {
                 </div>
               )}
               {postLink && (
-                <div className="mt-4 p-3 bg-gray-300 dark:bg-gray-600 rounded-lg w-full">
+                <div className="mt-4 p-3 bg-gray-300 dark:bg-gray-700 rounded-lg w-full">
                   <p className="sm:text-sm text-xs mb-2">
                     Con đường tới tâm sự của con:
                   </p>
                   <div className="flex items-center gap-2 bg-gray-100 dark:bg-neutral-900 p-2 rounded border border-black dark:border-white">
                     <input
                       type="text"
-                      value={`${window.location.href}views/${postLink}`}
+                      value={`${window.location.origin}/views/${postLink}`}
                       readOnly
                       className="flex-1 bg-transparent outline-none text-sm"
                     />
                     <button
                       onClick={copyToClipboard}
-                      className="p-1 hover:bg-gray-200 dark:hover:bg-gray-700 rounded"
+                      className="p-1 hover:bg-gray-300 dark:hover:bg-gray-700 rounded cursor-pointer"
                       title="Sao chép"
                     >
                       <PiCopy size={18} />
@@ -425,7 +425,7 @@ export default function Feed() {
                       ).map((comment) => (
                         <div
                           key={comment._id}
-                          className="text-sm bg-gray-100 dark:bg-gray-900 p-2 rounded-lg"
+                          className="text-sm bg-gray-100 dark:bg-neutral-900 p-2 rounded-lg"
                         >
                           <p className="text-gray-700 dark:text-gray-300">
                             {comment.content}

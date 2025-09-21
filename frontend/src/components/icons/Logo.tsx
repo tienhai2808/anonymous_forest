@@ -1,11 +1,15 @@
 "use client";
 
-export default function Logo() {
+interface IconProps {
+  className: string;
+}
+
+export default function Logo({ className }: IconProps) {
   return (
     <svg
       xmlns="http://www.w3.org/2000/svg"
       viewBox="0 0 64 64"
-      className="w-10 h-10 sm:w-14 sm:h-14"
+      className={className}
     >
       <g data-name="Glyph">
         <path

@@ -48,23 +48,36 @@ export async function getRandomPost(): Promise<ApiResponse<PostResponse>> {
   return response.data;
 }
 
+export async function getPostByLink(
+  postLink: string
+): Promise<ApiResponse<PostResponse>> {
+  const response = await axiosInstance
+    .get<ApiResponse<PostResponse>>(`/posts/${postLink}`)
+    .catch((error) => {
+      throw error;
+    });
+  return response.data;
+}
+
 export async function createPost(
   data: CreatePostData
 ): Promise<ApiResponse<PostCreatedResponse>> {
-  const response = await axiosInstance.post("/posts", data).catch((error) => {
-    throw error;
-  });
+  const response = await axiosInstance
+    .post<ApiResponse<PostCreatedResponse>>("/posts", data)
+    .catch((error) => {
+      throw error;
+    });
   return response.data;
 }
 
 export async function addEmpathy(postId: string): Promise<void> {
-  await axiosInstance.patch(`/posts/${postId}/empathy`).catch((error) => {
+  await axiosInstance.patch<void>(`/posts/${postId}/empathy`).catch((error) => {
     throw error;
   });
 }
 
 export async function addProtest(postId: string): Promise<void> {
-  await axiosInstance.patch(`posts/${postId}/protest`).catch((error) => {
+  await axiosInstance.patch<void>(`posts/${postId}/protest`).catch((error) => {
     throw error;
   });
 }
@@ -73,7 +86,9 @@ export async function addComment(
   postId: string,
   data: CreatePostCommentData
 ): Promise<void> {
-  await axiosInstance.post(`/posts/${postId}/comments`, data).catch((error) => {
-    throw error;
-  });
+  await axiosInstance
+    .post<void>(`/posts/${postId}/comments`, data)
+    .catch((error) => {
+      throw error;
+    });
 }

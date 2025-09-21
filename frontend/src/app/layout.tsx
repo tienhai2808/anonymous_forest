@@ -32,10 +32,10 @@ export default function RootLayout({
           disableTransitionOnChange
         >
           <div className="flex h-screen flex-col sm:flex-row">
-            <div className="order-last sm:order-first">
-              <SideBar />
+            <SideBar />
+            <div className="flex sm:ml-[88px] flex-col flex-1">
+              {children}
             </div>
-            <div className="flex flex-col flex-1">{children}</div>
           </div>
         </ThemeProvider>
       </body>

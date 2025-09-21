@@ -9,7 +9,7 @@ export default function Mandala() {
       viewBox="0 0 100 100"
       enableBackground="new 0 0 100 100"
       xmlSpace="preserve"
-      className="w-0 h-0 md:w-32 md:h-32 lg:h-46 lg:w-46"
+      className="w-150 h-150 lg:h-170 lg:w-170"
     >
       <g>
         <path
