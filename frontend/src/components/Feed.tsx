@@ -22,7 +22,7 @@ import {
   PiSmiley,
   PiSmileyWink,
 } from "react-icons/pi";
-import { response } from "@/lib/quotes";
+import { response } from "@/lib/constants";
 
 export default function Feed() {
   const textareaRef = useRef<HTMLTextAreaElement | null>(null);
@@ -39,6 +39,8 @@ export default function Feed() {
   const [linkCopied, setLinkCopied] = useState<boolean>(false);
   const [isCommentMode, setIsCommentMode] = useState<boolean>(false);
 
+  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000";
+
   useEffect(() => {
     const fetchPost = async () => {
       try {
@@ -47,6 +49,7 @@ export default function Feed() {
         const res = await getRandomPost();
         setPost(res.data.post);
       } catch (err: any) {
+        console.log(err);
         if (err.response?.status === 404 || err.response?.status === 429) {
           setError(null);
           return;
@@ -114,6 +117,7 @@ export default function Feed() {
         setTimeout(adjustHeight, 0);
       }
     } catch (err: any) {
+      console.log(err);
       if (err.response?.status === 404 || err.response?.status === 429) {
         setError(null);
         return;
@@ -126,7 +130,7 @@ export default function Feed() {
 
   const copyToClipboard = () => {
     if (postLink) {
-      navigator.clipboard.writeText(`${window.location.origin}/views/${postLink}`);
+      navigator.clipboard.writeText(`${baseUrl}/views/${postLink}`);
       setLinkCopied(true);
       setTimeout(() => setLinkCopied(false), 2000);
     }
@@ -152,6 +156,7 @@ export default function Feed() {
         setTimeout(adjustHeight, 0);
       }
     } catch (err: any) {
+      console.log(err);
       if (err.response?.status === 404 || err.response?.status === 429) {
         setError(null);
         return;
@@ -182,6 +187,7 @@ export default function Feed() {
         setTimeout(adjustHeight, 0);
       }
     } catch (err: any) {
+      console.log(err);
       setError(
         err.response?.data?.message ||
           err.message ||
@@ -348,7 +354,7 @@ export default function Feed() {
                   <div className="flex items-center gap-2 bg-gray-100 dark:bg-neutral-900 p-2 rounded border border-black dark:border-white">
                     <input
                       type="text"
-                      value={`${window.location.origin}/views/${postLink}`}
+                      value={`${baseUrl}/views/${postLink}`}
                       readOnly
                       className="flex-1 bg-transparent outline-none text-sm"
                     />

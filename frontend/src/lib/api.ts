@@ -10,9 +10,10 @@ import axios, {
   AxiosResponse,
   InternalAxiosRequestConfig,
 } from "axios";
+import { backendBaseURL } from "./constants";
 
 const axiosInstance: AxiosInstance = axios.create({
-  baseURL: process.env.NEXT_PUBLIC_API_URL || "localhost:5000/api/v1",
+  baseURL: backendBaseURL,
   withCredentials: true,
   headers: {
     "Content-Type": "application/json",

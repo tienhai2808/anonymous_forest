@@ -1,7 +1,7 @@
 import Feed from "@/components/Feed";
 import Buddha from "@/components/icons/Buddha";
 import Notification from "@/components/ui/Notification";
-import { welcome } from "@/lib/quotes";
+import { welcome } from "@/lib/constants";
 
 export default function Home() {
   const randomQuote = welcome[Math.floor(Math.random() * welcome.length)];

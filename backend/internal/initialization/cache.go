@@ -11,8 +11,8 @@ import (
 
 func InitCache(cfg *config.Config) (*redis.Client, error) {
 	rdb := redis.NewClient(&redis.Options{
-		Addr:      cfg.Cache.CAddr,
-		DB:        cfg.Cache.CDb,
+		Addr:     cfg.Cache.CAddr,
+		Password: cfg.Cache.CPassword,
 	})
 
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)

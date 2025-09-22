@@ -1,7 +1,6 @@
 package config
 
 import (
-	"os"
 	"time"
 
 	"github.com/spf13/viper"
@@ -40,22 +39,26 @@ type Config struct {
 	} `mapstructure:"database"`
 
 	Cache struct {
-		CAddr string `mapstructure:"redis_addr"`
-		CDb   int    `mapstructure:"redis_db"`
+		CAddr     string `mapstructure:"redis_addr"`
+		CPassword string `mapstructure:"redis_password"`
 	} `mapstructure:"cache"`
 }
 
 func LoadConfig() (*Config, error) {
-	cfgFile := os.Getenv("CONFIG_FILE")
-	if cfgFile == "" {
-		cfgFile = "config/config.yaml"
-	}
-	viper.SetConfigFile(cfgFile)
-	viper.SetConfigType("yaml")
 	viper.AutomaticEnv()
+	viper.BindEnv("database.mongo_uri", "MONGO_URI")
+	viper.BindEnv("database.mongo_db", "MONGO_DB")
+	viper.BindEnv("cache.redis_addr", "REDIS_ADDR")
+	viper.BindEnv("cache.redis_password", "REDIS_PASSWORD")
+
+	viper.SetConfigType("yaml")
+	viper.SetConfigName("config")
+	viper.AddConfigPath("./config")
 
 	if err := viper.ReadInConfig(); err != nil {
-		return nil, err
+		if _, ok := err.(viper.ConfigFileNotFoundError); !ok {
+			return nil, err
+		}
 	}
 
 	var config Config
