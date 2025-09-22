@@ -56,9 +56,7 @@ func LoadConfig() (*Config, error) {
 	viper.AddConfigPath("./config")
 
 	if err := viper.ReadInConfig(); err != nil {
-		if _, ok := err.(viper.ConfigFileNotFoundError); !ok {
-			return nil, err
-		}
+    return nil, err
 	}
 
 	var config Config
