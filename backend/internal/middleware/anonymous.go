@@ -5,7 +5,7 @@ import (
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/google/uuid"
-	"github.com/tienhai2808/anonymous_forest/config"
+	"github.com/tienhai2808/anonymous_forest/internal/config"
 )
 
 func CheckSession(cfg *config.Config) fiber.Handler {

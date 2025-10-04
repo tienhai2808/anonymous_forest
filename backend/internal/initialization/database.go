@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/tienhai2808/anonymous_forest/config"
+	"github.com/tienhai2808/anonymous_forest/internal/config"
 	"go.mongodb.org/mongo-driver/v2/mongo"
 	"go.mongodb.org/mongo-driver/v2/mongo/options"
 )

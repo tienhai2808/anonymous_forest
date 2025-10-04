@@ -4,6 +4,8 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"os/signal"
+	"syscall"
 	"time"
 
 	"github.com/gofiber/fiber/v2"
@@ -11,8 +13,8 @@ import (
 	"github.com/gofiber/fiber/v2/middleware/limiter"
 	"github.com/gofiber/fiber/v2/middleware/logger"
 	"github.com/redis/go-redis/v9"
-	"github.com/tienhai2808/anonymous_forest/config"
 	"github.com/tienhai2808/anonymous_forest/internal/common"
+	"github.com/tienhai2808/anonymous_forest/internal/config"
 	"github.com/tienhai2808/anonymous_forest/internal/container"
 	"github.com/tienhai2808/anonymous_forest/internal/initialization"
 	"github.com/tienhai2808/anonymous_forest/internal/middleware"
@@ -115,4 +117,26 @@ func (s *Server) Shutdown(ctx context.Context) {
 	if !fiber.IsChild() {
 		log.Println("Shutdown server thành công")
 	}
+}
+
+func (s *Server) GracefulShutdown(ch <-chan error) {
+	ctx, stop := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM)
+	defer stop()
+
+	select {
+	case err := <-ch:
+		if !fiber.IsChild() {
+			log.Printf("Chạy server thất bại: %v", err)
+		}
+	case <-ctx.Done():
+		if !fiber.IsChild() {
+			log.Println("Có tín hiệu dừng server")
+		}
+	}
+
+	stop()
+
+	shutdownCtx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+	s.Shutdown(shutdownCtx)
 }

@@ -22,7 +22,7 @@ WORKDIR /app
 
 COPY --from=builder /app/main .
 
-COPY --from=builder /app/config ./config
+COPY --from=builder /app/configs ./configs
 
 USER fiber
 
