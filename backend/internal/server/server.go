@@ -33,9 +33,9 @@ func NewServer(cfg *config.Config) (*Server, error) {
 	app := fiber.New(
 		fiber.Config{
 			Prefork:      cfg.App.Http.Prefork,
-			WriteTimeout: cfg.App.Http.WriteTimeout * time.Second,
-			ReadTimeout:  cfg.App.Http.ReadTimeout * time.Second,
-			IdleTimeout:  cfg.App.Http.WriteTimeout * time.Second,
+			WriteTimeout: cfg.App.Http.WriteTimeout,
+			ReadTimeout:  cfg.App.Http.ReadTimeout,
+			IdleTimeout:  cfg.App.Http.WriteTimeout,
 			BodyLimit:    cfg.App.Http.BodyLimit * 1024 * 1024,
 		},
 	)

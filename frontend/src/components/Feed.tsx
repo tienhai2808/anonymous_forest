@@ -39,7 +39,7 @@ export default function Feed() {
   const [linkCopied, setLinkCopied] = useState<boolean>(false);
   const [isCommentMode, setIsCommentMode] = useState<boolean>(false);
 
-  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000";
+  const origin = process.env.NEXT_PUBLIC_BASE_URL!;
 
   useEffect(() => {
     const fetchPost = async () => {
@@ -130,7 +130,7 @@ export default function Feed() {
 
   const copyToClipboard = () => {
     if (postLink) {
-      navigator.clipboard.writeText(`${baseUrl}/views/${postLink}`);
+      navigator.clipboard.writeText(`${origin}/views/${postLink}`);
       setLinkCopied(true);
       setTimeout(() => setLinkCopied(false), 2000);
     }
@@ -354,7 +354,7 @@ export default function Feed() {
                   <div className="flex items-center gap-2 bg-gray-100 dark:bg-neutral-900 p-2 rounded border border-black dark:border-white">
                     <input
                       type="text"
-                      value={`${baseUrl}/views/${postLink}`}
+                      value={`${origin}/views/${postLink}`}
                       readOnly
                       className="flex-1 bg-transparent outline-none text-sm"
                     />

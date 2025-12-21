@@ -1,17 +1,3 @@
-const isDirectFrontend = typeof window !== "undefined" && window.location.port === "3000";
-
-export const backendBaseURL =
-  process.env.NODE_ENV === "production"
-    ? isDirectFrontend
-      ? "http://localhost:5000/backend/api" 
-      : process.env.NEXT_PUBLIC_API_URL || "/backend/api"
-    : process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/backend/api";
-
-export const frontendBaseURL =
-  process.env.NODE_ENV === "production"
-    ? process.env.NEXT_PUBLIC_API_URL || "http://localhost"
-    : process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000";
-
 export const welcome = [
   "Con hãy lắng lòng, mọi khổ đau đều là mây trôi, tâm an thì trời sẽ sáng.",
   "Hãy nói ra, ta nghe bằng trái tim, không phán xét.",

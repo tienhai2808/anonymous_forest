@@ -6,7 +6,7 @@ import QRCodeGenerate from "./QRCode";
 import { LuGithub, LuInstagram, LuLink2, LuShare } from "react-icons/lu";
 
 export default function Share() {
-  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000";
+  const origin = process.env.NEXT_PUBLIC_BASE_URL!;
 
   return (
     <div className="sm:rounded-3xl rounded-xl p-4 dark:bg-gray-700/70 h-full bg-gray-300/70">
@@ -15,18 +15,18 @@ export default function Share() {
         <span>Chia sẻ Chốn An Yên tới mọi người</span>
       </div>
       <div className="flex items-center gap-2">
-        <QRCodeGenerate url={baseUrl} size={125} />
+        <QRCodeGenerate url={`${origin}`} size={125} />
         <div className="grid grid-cols-2 gap-2 p-2">
           <ButtonAbout
             label="copy"
             icon={LuLink2}
-            link={baseUrl}
+            link={`${origin}`}
             isCopy={true}
           />
           <ButtonAbout
             label="share"
             icon={LuShare}
-            link={baseUrl}
+            link={`${origin}`}
             isShare={true}
           />
           <ButtonAbout

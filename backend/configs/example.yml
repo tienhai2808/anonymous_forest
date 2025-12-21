@@ -1,0 +1,30 @@
+app:
+  port:
+  api_prefix:
+  cors:
+    allow_origins:
+    allow_methods:
+    allow_headers:
+    allow_credentials:
+    allow_files:
+    allow_private_network:
+    max_age:
+    expose_headers:
+  http:
+    prefork:
+    write_timeout:
+    read_timeout:
+    max_header_bytes:
+    idle_timeout:
+  client_token:
+  token_expires_in:
+  secure_cookie:
+  http_cookie:
+
+database:
+  mongo_uri:
+  mongo_db:
+
+cache:
+  redis_addr:
+  redis_password:

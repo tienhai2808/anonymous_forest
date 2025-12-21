@@ -28,4 +28,4 @@ USER fiber
 
 EXPOSE 5000
 
-CMD ["sh", "-c", "./main"]
+CMD ["./main"]

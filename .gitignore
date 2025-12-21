@@ -2,7 +2,7 @@
 /tmp
 *.exe
 *.exe~
-config.yaml
+config.yml
 
 node_modules
 .pnp
