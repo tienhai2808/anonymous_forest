@@ -21,6 +21,7 @@ import {
   PiSmileySad,
   PiSmiley,
   PiSmileyWink,
+  PiArrowClockwise,
 } from "react-icons/pi";
 import { response } from "@/lib/constants";
 
@@ -49,7 +50,6 @@ export default function Feed() {
         const res = await getRandomPost();
         setPost(res.data.post);
       } catch (err: any) {
-        console.log(err);
         if (err.response?.status === 404 || err.response?.status === 429) {
           setError(null);
           return;
@@ -117,9 +117,9 @@ export default function Feed() {
         setTimeout(adjustHeight, 0);
       }
     } catch (err: any) {
-      console.log(err);
       if (err.response?.status === 404 || err.response?.status === 429) {
         setError(null);
+        setPost(null);
         return;
       }
       setError(err.response?.data?.message || err.message || "Có lỗi xảy ra");
@@ -156,7 +156,6 @@ export default function Feed() {
         setTimeout(adjustHeight, 0);
       }
     } catch (err: any) {
-      console.log(err);
       if (err.response?.status === 404 || err.response?.status === 429) {
         setError(null);
         return;
@@ -187,7 +186,6 @@ export default function Feed() {
         setTimeout(adjustHeight, 0);
       }
     } catch (err: any) {
-      console.log(err);
       setError(
         err.response?.data?.message ||
           err.message ||
@@ -218,6 +216,31 @@ export default function Feed() {
 
   const handleConfirmSubmit = (getLinkValue: boolean) => {
     submitPost(pendingContent, getLinkValue);
+  };
+
+  const handleSkipPost = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      setResponseMessage(null);
+      setPostLink("");
+      setIsCommentMode(false);
+      setShowAllComments(false);
+      const res = await getRandomPost();
+      setPost(res.data.post);
+      if (textareaRef.current) {
+        setTimeout(adjustHeight, 0);
+      }
+    } catch (err: any) {
+      if (err.response?.status === 404 || err.response?.status === 429) {
+        setError(null);
+        setPost(null);
+        return;
+      }
+      setError(err.response?.data?.message || err.message || "Có lỗi xảy ra");
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleCommentClick = () => {
@@ -384,38 +407,49 @@ export default function Feed() {
                   </p>
                 </div>
 
-                <div className="flex items-center justify-end gap-2 space-y-2">
-                  <div className="text-xs text-gray-500 dark:text-gray-400 my-0">
-                    {formatDate(post.created_at)}
+                <div className="flex items-center justify-between sm:gap-0 gap-2 space-y-2">
+                  <div className="flex items-center tex-base mb-0">
+                    <button
+                      title="Chuyển bài"
+                      onClick={handleSkipPost}
+                      disabled={loading || submitting || countdown !== null}
+                      className="rounded-sm py-1 justify-between cursor-pointer flex items-center gap-0.5 hover:bg-gray-300 dark:hover:bg-gray-700 px-1"
+                    >
+                      <PiArrowClockwise />
+                    </button>
                   </div>
-
-                  <div className="flex items-center gap-2 tex-base">
-                    <button
-                      onClick={() => handleAddEmotion(post._id, true)}
-                      title="Đồng cảm"
-                      className="rounded-sm justify-between cursor-pointer flex items-center gap-0.5 hover:bg-gray-300 dark:hover:bg-gray-700 px-1"
-                    >
-                      <PiHandHeart />
-                      <span>{post.empathy_count || 0}</span>
-                    </button>
-                    <button
-                      onClick={() => handleAddEmotion(post._id, false)}
-                      title="Phản đối"
-                      className="rounded-sm justify-between cursor-pointer flex items-center gap-0.5 hover:bg-gray-300 dark:hover:bg-gray-700 px-1"
-                    >
-                      <PiHandPalm />
-                      <span>{post.protest_count || 0}</span>
-                    </button>
-                    {post.comments && (
+                  <div className="flex items-center justify-end sm:gap-2 gap-1 space-y-2">
+                    <div className="text-xs text-gray-500 dark:text-gray-400 my-0 text-right">
+                      {formatDate(post.created_at)}
+                    </div>
+                    <div className="flex items-center sm:gap-2 tex-base">
                       <button
-                        onClick={handleCommentClick}
-                        title="Nhận xét"
+                        onClick={() => handleAddEmotion(post._id, true)}
+                        title="Đồng cảm"
                         className="rounded-sm justify-between cursor-pointer flex items-center gap-0.5 hover:bg-gray-300 dark:hover:bg-gray-700 px-1"
                       >
-                        <PiChatCircleDots />
-                        <span>{post.comments.length || 0}</span>
+                        <PiHandHeart />
+                        <span>{post.empathy_count || 0}</span>
                       </button>
-                    )}
+                      <button
+                        onClick={() => handleAddEmotion(post._id, false)}
+                        title="Phản đối"
+                        className="rounded-sm justify-between cursor-pointer flex items-center gap-0.5 hover:bg-gray-300 dark:hover:bg-gray-700 px-1"
+                      >
+                        <PiHandPalm />
+                        <span>{post.protest_count || 0}</span>
+                      </button>
+                      {post.comments && (
+                        <button
+                          onClick={handleCommentClick}
+                          title="Nhận xét"
+                          className="rounded-sm justify-between cursor-pointer flex items-center gap-0.5 hover:bg-gray-300 dark:hover:bg-gray-700 px-1"
+                        >
+                          <PiChatCircleDots />
+                          <span>{post.comments.length || 0}</span>
+                        </button>
+                      )}
+                    </div>
                   </div>
                 </div>
 
@@ -465,7 +499,7 @@ export default function Feed() {
             !responseMessage &&
             !showConfirmDialog && (
               <div className="flex flex-col items-center py-8 text-gray-500">
-                <PiSmileyWink className="mb-2 text-5xl sm:text-6xl"/>
+                <PiSmileyWink className="mb-2 text-5xl sm:text-6xl" />
                 <p className="sm:text-base text-sm">
                   Hôm nay hữu duyên tới đây thôi, hãy dành thời gian cho bản
                   thân
@@ -477,7 +511,7 @@ export default function Feed() {
 
       {isCommentMode && (
         <div className="w-full flex items-center justify-between mb-2 px-2">
-          <span className="text-xs sm:text-sm">Nhận xét lời tấm sự</span>
+          <span className="text-xs sm:text-sm">Nhận xét lời tâm sự</span>
           <button
             onClick={handleCancelComment}
             className="text-xs sm:text-sm hover:bg-gray-300 dark:hover:bg-gray-700 p-1 rounded cursor-pointer"

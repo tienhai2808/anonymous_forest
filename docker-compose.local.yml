@@ -50,7 +50,7 @@ services:
       - anonymous_forest_network
     restart: unless-stopped
     healthcheck:
-      test: ["CMD", "wget", "-qO-", "http://localhost:5000/backend/api/health"]
+      test: ["CMD", "curl", "-f", "http://localhost:5000/backend/api/health"]
       interval: 10s
       timeout: 3s
       retries: 5
