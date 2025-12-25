@@ -5,6 +5,9 @@ services:
     restart: unless-stopped 
     ports:
       - "27017:27017"
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: ${MONGODB_USERNAME:-admin}
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGODB_PASSWORD:-12345678}
     volumes:
       - mongodb_data:/data/db
     networks:
@@ -19,7 +22,7 @@ services:
     image: redis:7.2-alpine
     container_name: redis
     restart: unless-stopped
-    command: redis-server --requirepass password
+    command: redis-server --requirepass ${REDIS_PASSWORD:-12345678}
     ports:
       - "6379:6379"
     volumes:
@@ -71,8 +74,7 @@ services:
     restart: unless-stopped
     depends_on:
       backend:
-        condition:
-          service_healthy
+        condition: service_healthy
 
 networks:
   anonymous_forest_network:
