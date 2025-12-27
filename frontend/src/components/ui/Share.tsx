@@ -30,7 +30,7 @@ export default function Share() {
             isShare={true}
           />
           <ButtonAbout
-            label="start"
+            label="star"
             icon={LuGithub}
             link="https://github.com/tienhai2808/anonymous_forest"
           />
