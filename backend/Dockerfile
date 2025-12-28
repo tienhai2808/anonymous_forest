@@ -14,15 +14,15 @@ RUN go build -o main ./cmd/api
 
 FROM alpine:latest
 
-RUN apk --no-cache add ca-certificates tzdata
+RUN apk add --no-cache ca-certificates tzdata
 
-RUN adduser -D -u 1001 fiber
+RUN addgroup -S -g 1001 go && adduser -S -D -u 1001 -G go fiber
 
 WORKDIR /app
 
-COPY --from=builder /app/main .
+COPY --from=builder --chown=fiber:go /app/main .
 
-COPY --from=builder /app/configs ./configs
+COPY --from=builder --chown=fiber:go /app/configs ./configs
 
 USER fiber
 
