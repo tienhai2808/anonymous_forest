@@ -9,7 +9,7 @@ services:
     volumes:
       - mongodb_data:/data/db
     networks:
-      - anonymous_forest_network
+      - app_network
     healthcheck:
       test: ["CMD", "mongosh", "--eval", "db.runCommand('ping').ok"]
       interval: 10s
@@ -24,7 +24,7 @@ services:
     volumes:
       - redis_data:/data
     networks:
-      - anonymous_forest_network
+      - app_network
     healthcheck:
       test: ["CMD", "redis-cli", "ping"]
       interval: 10s
@@ -46,7 +46,7 @@ services:
       redis:
         condition: service_healthy
     networks:
-      - anonymous_forest_network
+      - app_network
     restart: unless-stopped
     healthcheck:
       test: ["CMD-SHELL", "wget -qO- --tries=1 http://127.0.0.1:5000/backend/api/health || exit 1"]
@@ -69,7 +69,7 @@ services:
     expose:
       - "3000"
     networks:
-      - anonymous_forest_network
+      - app_network
     restart: unless-stopped
     depends_on:
       backend:
@@ -99,7 +99,7 @@ services:
       frontend:
         condition: service_healthy
     networks:
-      - anonymous_forest_network
+      - app_network
 
   certbot:
     image: certbot/certbot
@@ -109,7 +109,7 @@ services:
       - ./certbot/www:/var/www/certbot
 
 networks:
-  anonymous_forest_network:
+  app_network:
     driver: bridge
 
 volumes:
